@@ -28,6 +28,6 @@ docker build . -t ftpd
 ## Run
 
 ```
-docker run --rm -p 2121:2121 -p 60000-60099:60000-60099 -e MQTT_BROKER_HOST=mymqttbroker ftpd
+docker run --rm -p 2121:2121 -p 60000-60099:60000-60099 -e MQTT_BROKER_HOST=mymqttbroker guidoffm/ftp2mqtt
 ```
 You must expose at least the listening port for the FTP server and the passive ports range. 
