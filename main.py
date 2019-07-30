@@ -6,6 +6,7 @@ from pyftpdlib.authorizers import DummyAuthorizer
 from pyftpdlib.handlers import FTPHandler
 from pyftpdlib.servers import FTPServer
 
+
 class MyHandler(FTPHandler):
 
     def on_connect(self):
@@ -38,7 +39,9 @@ class MyHandler(FTPHandler):
             f = open(file, "rb")
             data = f.read()
             f.close()
+            # print(data)
             client.publish(os.environ.get('MQTT_PUBLISH_SUBJECT', "cameras/ftpuser/image"), payload=data, qos=0, retain=False)
+            print('published')
         os.remove(file)
 
     def on_incomplete_file_sent(self, file):
@@ -49,23 +52,40 @@ class MyHandler(FTPHandler):
         # remove partially uploaded files
         os.remove(file)
 
+def on_connect(client, userdata, flags, rc):
+    print("Connected with result code " + str(rc))
+    sys.stdout.flush()
+    # threading.Thread(target=start_ftp_server).start()
+
+def on_log(client, userdata, level, buf):
+    print("MQTT log:", buf)
+    sys.stdout.flush()
+
+def on_publish(client, userdata, mid):
+    print("Message sent with id", mid)
+    sys.stdout.flush()
+
 def main():
     global client 
     mqtt_broker_host = os.environ.get('MQTT_BROKER_HOST', '127.0.0.1')
     mqtt_broker_port = int(os.environ.get('MQTT_BROKER_PORT', '1883'))
+    client = mqtt.Client()
+    client.on_connect = on_connect
+    # client.on_message = on_message
+    # client.on_disconnect = on_disconnect
+    client.on_log = on_log
+    client.on_publish = on_publish
+
+    # print("client.connect")
+    client.connect_async(mqtt_broker_host, mqtt_broker_port)
+    client.loop_start()
+
     ftp_server_port = int(os.environ.get('FTP_SERVER_PORT', '2121'))
     ftp_server_passive_ports_min = int(os.environ.get('FTP_SERVER_PASSIVE_PORTS_MIN', '60000'))
     ftp_server_passive_ports_max = int(os.environ.get('FTP_SERVER_PASSIVE_PORTS_MAX', '60100'))
     ftp_server_username = os.environ.get('FTP_SERVER_USERNAME', None)
     ftp_server_password = os.environ.get('FTP_SERVER_PASSWORD', None)
     ftp_server_address = os.environ.get('FTP_SERVER_ADDRESS', '')
-    client = mqtt.Client()
-    # client.on_connect = on_connect
-    # client.on_message = on_message
-    # client.on_disconnect = on_disconnect
-
-    # print("client.connect")
-    client.connect(mqtt_broker_host, mqtt_broker_port)
 
     # Instantiate a dummy authorizer for managing 'virtual' users
     authorizer = DummyAuthorizer()
