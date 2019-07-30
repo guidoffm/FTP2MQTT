@@ -22,7 +22,7 @@ Options can be set by using environment variables.
 ## Build
 
 ```
-docker build . -t ftpd
+docker build . -t ftp2mqtt
 ```
 
 ## Run
