@@ -10,7 +10,7 @@ from pyftpdlib.servers import FTPServer
 class MyHandler(FTPHandler):
 
     def on_connect(self):
-        print ("%s:%s connected" , self.remote_ip, self.remote_port)
+        print ("%s:%s connected" %( self.remote_ip, self.remote_port))
 
     def on_disconnect(self):
         # do something when client disconnects
@@ -34,7 +34,7 @@ class MyHandler(FTPHandler):
         # do something when a file has been received
         fsize = os.path.getsize(file)
         if fsize > 0:
-            print('File received', file, 'with', fsize, 'bytes')
+            print('File %s received with %d bytes' % (file, fsize))
             sys.stdout.flush()
             f = open(file, "rb")
             data = f.read()
